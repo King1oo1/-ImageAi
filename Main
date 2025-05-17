@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Image Generator | Creative Studio</title>
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #3498db;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .navbar {
+            background-color: var(--primary-color);
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .nav-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            color: var(--light-color);
+            font-size: 1.5rem;
+            font-weight: bold;
+            text-decoration: none;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .nav-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        .container {
+            flex: 1;
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        .generator-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--dark-color);
+            margin-bottom: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            min-height: 150px;
+            font-size: 1rem;
+            resize: vertical;
+            transition: border-color 0.3s;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            font-weight: 500;
+        }
+
+        .btn-primary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+        }
+
+        .image-preview {
+            text-align: center;
+            margin-top: 2rem;
+            position: relative;
+        }
+
+        #generatedImage {
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.9);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--secondary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            background-color: var(--primary-color);
+            color: var(--light-color);
+            padding: 1.5rem 2rem;
+            margin-top: auto;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .footer-links a {
+            color: var(--light-color);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--secondary-color);
+        }
+
+        @media (max-width: 768px) {
+            .nav-links, .footer-links {
+                display: none;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-content">
+            <a href="#" class="logo">AI Studio</a>
+            <div class="nav-links">
+                <a href="#home">Home</a>
+                <a href="#gallery">Gallery</a>
+                <a href="#about">About</a>
+                <a href="#contact">Contact</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="generator-card">
+            <h1>AI Image Generator</h1>
+            
+            <div class="input-group">
+                <textarea id="promptInput" placeholder="Describe the image you want to generate... (e.g. 'A cyberpunk cityscape at night with neon lights and flying cars')"></textarea>
+            </div>
+
+            <div class="button-group">
+                <button class="btn btn-primary" id="generateBtn">Generate Image</button>
+                <button class="btn btn-secondary" id="downloadBtn" disabled>Download</button>
+            </div>
+
+            <div class="image-preview">
+                <img id="generatedImage" alt="Generated image preview">
+            </div>
+        </div>
+    </div>
+
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div>© 2024 AI Studio. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="#privacy">Privacy Policy</a>
+                <a href="#terms">Terms of Service</a>
+                <a href="#contact">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Configuration
+        const HF_TOKEN = "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";
+        const MODEL_ID = "stabilityai/stable-diffusion-xl-base-1.0";
+        const API_URL = `https://api-inference.huggingface.co/models/${MODEL_ID}`;
+
+        // DOM Elements
+        const elements = {
+            promptInput: document.getElementById('promptInput'),
+            generateBtn: document.getElementById('generateBtn'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            generatedImage: document.getElementById('generatedImage'),
+            loadingOverlay: document.getElementById('loadingOverlay')
+        };
+
+        // Event Listeners
+        elements.generateBtn.addEventListener('click', generateImage);
+        elements.downloadBtn.addEventListener('click', downloadImage);
+
+        async function generateImage() {
+            const prompt = elements.promptInput.value.trim();
+            
+            if (!prompt) {
+                showNotification('Please enter a description to generate an image', 'error');
+                return;
+            }
+
+            toggleLoading(true);
+            clearPreview();
+
+            try {
+                const response = await queryAPI(prompt);
+                
+                if (response instanceof Blob) {
+                    const imageUrl = URL.createObjectURL(response);
+                    displayImage(imageUrl);
+                    showNotification('Image generated successfully!', 'success');
+                } else {
+                    handleApiError(response);
+                }
+            } catch (error) {
+                showNotification(`Error: ${error.message}`, 'error');
+            } finally {
+                toggleLoading(false);
+            }
+        }
+
+        async function queryAPI(prompt) {
+            const response = await fetch(API_URL, {
+                headers: { 
+                    "Authorization": `Bearer ${HF_TOKEN}`,
+                    "Content-Type": "application/json"
+                },
+                method: "POST",
+                body: JSON.stringify({ inputs: prompt }),
+            });
+
+            return response.ok ? response.blob() : response.json();
+        }
+
+        function displayImage(url) {
+            elements.generatedImage.src = url;
+            elements.generatedImage.style.display = 'block';
+            elements.downloadBtn.disabled = false;
+        }
+
+        function downloadImage() {
+            const link = document.createElement('a');
+            link.href = elements.generatedImage.src;
+            link.download = `ai-image-${Date.now()}.png`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function toggleLoading(show) {
+            elements.loadingOverlay.style.display = show ? 'flex' : 'none';
+            elements.generateBtn.disabled = show;
+        }
+
+        function clearPreview() {
+            elements.generatedImage.style.display = 'none';
+            elements.downloadBtn.disabled = true;
+        }
+
+        function handleApiError(response) {
+            const error = response.error || 'Unknown error occurred';
+            showNotification(`API Error: ${error}`, 'error');
+        }
+
+        function showNotification(message, type) {
+            // Implement a proper notification system or use alert()
+            alert(`${type.toUpperCase()}: ${message}`);
+        }
+    </script>
+</body>
+</html>
