@@ -54,6 +54,8 @@
           })
         });
 
+        console.log('API Response:', response); // Log the full response to the console
+
         const contentType = response.headers.get("content-type");
 
         // If the response is JSON, it's an error message
@@ -67,6 +69,7 @@
 
         // If response is a valid image (blob), display it
         const blob = await response.blob();
+        console.log('Image Blob:', blob); // Log the blob to ensure we're receiving an image
         const imageUrl = URL.createObjectURL(blob);
         resultImage.src = imageUrl;
         loading.style.display = "none";
