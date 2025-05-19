@@ -62,7 +62,7 @@
   <img id="generatedImage" alt="Generated AI Image"/>
 
   <script>
-    const API_URL = "https://api-inference.huggingface.co/models/ZB-Tech/Text-to-Image";
+    const API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2";
     const HF_TOKEN = "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";
 
     const promptInput = document.getElementById('promptInput');
@@ -90,8 +90,8 @@
         });
 
         if (!response.ok) {
-          const error = await response.json();
-          throw new Error(error.error || "Unknown error from API");
+          const errorText = await response.text();
+          throw new Error(`API Error: ${errorText}`);
         }
 
         const blob = await response.blob();
