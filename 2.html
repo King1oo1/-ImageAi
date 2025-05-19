@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stable Diffusion XL Generator</title>
+  <style>
+    body { font-family: Arial; background: #f0f0f0; text-align: center; padding: 50px; }
+    textarea { width: 80%; max-width: 600px; height: 120px; font-size: 16px; padding: 12px; margin-bottom: 20px; border-radius: 6px; border: 1px solid #ccc; }
+    button { padding: 10px 20px; font-size: 16px; margin: 10px; border: none; background-color: #3498db; color: white; border-radius: 6px; cursor: pointer; }
+    button:disabled { background-color: #aaa; cursor: not-allowed; }
+    img { max-width: 90%; margin-top: 30px; border-radius: 8px; display: none; }
+    #status { margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h1>Stable Diffusion XL Image Generator</h1>
+  <textarea id="promptInput" placeholder="Enter your prompt (e.g., A dragon flying through a neon city at night)..."></textarea><br />
+  <button onclick="generateImage()">Generate Image</button>
+  <button id="downloadBtn" disabled onclick="downloadImage()">Download</button>
+  <p id="status"></p>
+  <img id="outputImage" />
+
+  <script>
+    async function generateImage() {
+      const prompt = document.getElementById('promptInput').value.trim();
+      const status = document.getElementById('status');
+      const img = document.getElementById('outputImage');
+      const downloadBtn = document.getElementById('downloadBtn');
+
+      if (!prompt) {
+        alert("Please enter a prompt.");
+        return;
+      }
+
+      status.textContent = "⏳ Generating image (please wait 20–40 seconds)...";
+      img.style.display = "none";
+      downloadBtn.disabled = true;
+
+      try {
+        const response = await fetch("http://127.0.0.1:5000/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.error || "Unknown error from server.");
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        img.src = url;
+        img.style.display = "block";
+        downloadBtn.disabled = false;
+        downloadBtn.setAttribute("data-url", url);
+        status.textContent = "✅ Image generated!";
+      } catch (err) {
+        status.textContent = "❌ Error: " + err.message;
+      }
+    }
+
+    function downloadImage() {
+      const url = document.getElementById('downloadBtn').getAttribute("data-url");
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `sdxl-image-${Date.now()}.png`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+  </script>
+</body>
+</html>
